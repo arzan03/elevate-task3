@@ -1,176 +1,67 @@
-# CI/CD Pipeline for Node.js Web App
+# Elevate Task 3
 
-This project demonstrates how to set up CI/CD pipelines using GitHub Actions and Jenkins to automate the deployment of a Node.js web application.
+## Project Overview
+This project demonstrates a DevOps workflow using Git best practices. It includes a basic Express.js application and follows a structured branching strategy.
 
----
+## Steps to Complete Task 3
 
-## Task 1: GitHub Actions CI/CD Pipeline
+### 1. Initialize Git Repository
+- A Git repository was initialized using the command:
+  ```bash
+  git init
+  ```
+- A `.gitignore` file was created to exclude unnecessary files such as `node_modules` and `.env`.
 
-This project demonstrates how to set up a CI/CD pipeline using GitHub Actions to automate the deployment of a Node.js web application. The pipeline builds, tests, and deploys the application as a Docker image to DockerHub.
+### 2. Push to GitHub
+- A new GitHub repository was created and linked to the local repository using the GitHub CLI:
+  ```bash
+  gh repo create elevate-task3 --public --source=. --remote=origin --push
+  ```
 
-### Steps to Achieve the Task
+### 3. Create Branches
+- The following branches were created to follow Git best practices:
+  - `main`: The production-ready branch.
+  - `dev`: The development branch where features are integrated.
+  - `feature`: Branches for individual features.
+- Commands used:
+  ```bash
+  git checkout -b dev
+  git push -u origin dev
+  git checkout -b feature
+  git push -u origin feature
+  ```
 
-#### 1. **Application Setup**
-   - A simple Node.js application was created using Express.
-   - The application has a single endpoint (`GET /`) that returns `Hello, World!`.
+### 4. Use Pull Requests
+- Pull requests are used to merge changes from `feature` to `dev` and from `dev` to `main`.
 
-#### 2. **Testing**
-   - A test suite was added using Jest and Supertest.
-   - The test verifies that the `GET /` endpoint returns the expected response.
-   - To run the tests locally, use the command:
-     ```bash
-     npm test
-     ```
+### 5. Add Git Tags
+- Git tags are used to mark important milestones or releases. Example:
+  ```bash
+  git tag -a v1.0 -m "Initial release"
+  git push origin v1.0
+  ```
 
-#### 3. **Dockerfile Creation**
-   - A `Dockerfile` was created to containerize the Node.js application.
-   - The `Dockerfile` specifies:
-     - The base image (`node:16`).
-     - The working directory (`/app`).
-     - Installation of dependencies using `npm install`.
-     - Copying the application code.
-     - Exposing port `3000` for the app.
-     - Starting the app with `npm start`.
+## Setup Instructions
+1. Clone the repository:
+   ```bash
+   git clone <repository-url>
+   ```
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Start the application:
+   ```bash
+   npm start
+   ```
 
-#### 4. **GitHub Actions Workflow**
-   - A GitHub Actions workflow file (`.github/workflows/main.yml`) was created to define the CI/CD pipeline.
-   - The pipeline is triggered on every push to the `main` branch.
+## Usage
+Visit `http://localhost:3000` to see the application running.
 
-#### 5. **Pipeline Configuration**
-   - The pipeline consists of the following steps:
-     1. **Checkout Code**: Uses the `actions/checkout@v3` action to fetch the repository code.
-     2. **Set Up Node.js**: Uses the `actions/setup-node@v3` action to set up Node.js version `16`.
-     3. **Install Dependencies and Run Tests**: Installs dependencies using `npm install` and runs tests using `npm test`.
-     4. **Log in to DockerHub**: Uses the `docker/login-action@v2` action to authenticate with DockerHub using credentials stored in GitHub Secrets (`DOCKER_USERNAME` and `DOCKER_PASSWORD`).
-     5. **Build and Push Docker Image**: Builds a Docker image using the `docker build` command and pushes it to DockerHub using the `docker push` command.
-
-#### 6. **GitHub Secrets**
-   - DockerHub credentials were stored as GitHub Secrets:
-     - `DOCKER_USERNAME`: Your DockerHub username.
-     - `DOCKER_PASSWORD`: Your DockerHub password.
-
-#### 7. **Deployment**
-   - The Docker image is built and tagged as `<DOCKER_USERNAME>/node-app:latest`.
-   - The image is pushed to DockerHub, making it available for deployment.
-
----
-
-## Task 2: Jenkins CI/CD Pipeline
-
-This section explains how to set up a Jenkins pipeline to automate the process of building, testing, and deploying the Node.js application.
-
-### 1. **Running Jenkins on an Azure VM**
-   - Launch an Cloud Virtual Machine (VM) with the following specifications:
-     - OS: Ubuntu 24.04 LTS
-     - Minimum 2 vCPUs and 4 GB RAM
-   - SSH into the VM and install Docker:
-     ```bash
-     sudo apt update
-     sudo apt install -y docker.io
-     sudo systemctl start docker
-     sudo systemctl enable docker
-     ```
-   - Run Jenkins in a Docker container:
-     ```bash
-     sudo docker run -d --name jenkins -p 8080:8080 -p 50000:50000 \
-       -v jenkins_home:/var/jenkins_home \
-       -v /var/run/docker.sock:/var/run/docker.sock \
-       jenkins/jenkins:lts
-     ```
-   - Access Jenkins at `http://<VM_PUBLIC_IP>:8080`.
-   - Follow the on-screen instructions to unlock Jenkins using the initial admin password:
-     ```bash
-     sudo docker exec jenkins cat /var/jenkins_home/secrets/initialAdminPassword
-     ```
-   - Install the recommended plugins during the setup process.
-
-   - Install `npm` and `docker` inside the Jenkins container:
-     ```bash
-     sudo docker exec -it -u 0 jenkins bash
-     apt-get update
-     apt-get install -y npm docker.io
-     usermod -aG docker jenkins
-     exit
-     ```
-
-   ![Jenkins Dashboard](misc/a.png)
-
-### 2. **Install Required Plugins**
-   - Go to `Manage Jenkins` > `Manage Plugins`.
-   - Install the following plugins:
-     - `Pipeline`
-     - `Docker Pipeline`
-     - `GitHub Integration`
-
-   ![Installed Plugins](misc/b.png)
-
-### 3. **Configure DockerHub Credentials**
-   - Go to `Manage Jenkins` > `Manage Credentials`.
-   - Add two credentials:
-     1. **DockerHub Username**:
-        - ID: `docker-username`
-        - Your DockerHub username
-     2. **DockerHub Password**:
-        - ID: `docker-password`
-        - Your DockerHub password
-
-### 4. **Add Jenkinsfile to Repository**
-   - Add the `Jenkinsfile` to the root of your project repository. The `Jenkinsfile` defines the pipeline stages for building, testing, and deploying the application.
-
-### 5. **Set Up a Jenkins Pipeline Job**
-   - Create a new pipeline job in Jenkins:
-     1. Go to `New Item` > Enter a name > Select `Pipeline`.
-     2. Under `Pipeline` > `Definition`, select `Pipeline script from SCM`.
-     3. Configure the repository URL and branch containing the `Jenkinsfile`.
-
-   ![Pipeline Job Configuration](misc/c.png)
-
-### 6. **Configure Jenkins to Detect GitHub Changes**
-   - Go to your GitHub repository and navigate to `Settings` > `Webhooks`.
-   - Add a new webhook with the following details:
-     - **Payload URL**: `http://<VM_PUBLIC_IP>:8080/github-webhook/`
-     - **Content type**: `application/json`
-     - **Events**: Select "Just the push event."
-   - Save the webhook.
-
-   ![GitHub Webhook Configuration](misc/d.png)
-
-### 7. **Pipeline Stages**
-   - The pipeline consists of the following stages:
-     1. **Checkout Code**: Pulls the latest code from the repository.
-     2. **Install Dependencies and Test**: Installs dependencies using `npm install` and runs tests using `npm test`.
-     3. **Build Docker Image**: Builds a Docker image for the application using the `Dockerfile`.
-     4. **Push Docker Image**: Logs in to DockerHub and pushes the Docker image.
-
-### 8. **Test the Pipeline**
-   - Push changes to the repository to trigger the pipeline.
-   - Monitor the Jenkins dashboard to ensure the pipeline runs successfully.
-
-   ![Successful Pipeline Run](misc/e.png)
-
----
-
-## File Structure
-```
-/Users/arzan03/elevate/task1/
-├── app.js
-├── server.js
-├── test/
-│   └── app.test.js
-├── Dockerfile
-├── .github/
-│   └── workflows/
-│       └── main.yml
-├── Jenkinsfile
-├── package.json
-└── README.md
-```
-
----
-
-## Conclusion
-This project demonstrates two CI/CD pipelines:
-1. **GitHub Actions**: Automates testing, building, and deploying the application to DockerHub.
-2. **Jenkins**: Provides an alternative CI/CD pipeline with similar functionality, configured using a `Jenkinsfile`.
-
-Both pipelines ensure a streamlined process for rapid and reliable deployments.
+## Contributing
+1. Create a new feature branch:
+   ```bash
+   git checkout -b feature/<feature-name>
+   ```
+2. Commit your changes and push to GitHub.
+3. Open a pull request to merge into `dev`.
